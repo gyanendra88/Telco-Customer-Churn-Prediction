@@ -177,7 +177,7 @@ Possible reasons:
 ## 🏗 Project Structure
 
 ```
-ml_assignment_2/
+Telco-Customer-Churn-Prediction/
 ├── app.py                                     # Streamlit web application
 ├── requirements.txt                           # Python dependencies
 ├── README.md                                  # Project documentation

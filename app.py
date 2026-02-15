@@ -1,3 +1,4 @@
+# app.py
 import os
 import numpy as np
 import pandas as pd
@@ -99,34 +100,30 @@ def get_probabilities(pipeline, X_data):
 def plot_confusion_matrix(cm, labels=("No", "Yes")):
     """
     Styled 2x2 confusion matrix:
-    - Small size
+    - Fixed size: figsize=(5,4)
     - 4 colored blocks
     - TP / FN / FP / TN labels
     - Axis labels: Actual value vs Predicted value
-    labels: (negative_label, positive_label) e.g. ("No","Yes")
+    labels: (negative_label, positive_label)
     """
-
     neg_label, pos_label = labels
 
-    # Make it compact
-    fig, ax = plt.subplots(figsize=(4.0, 3.0))
+    # Requested size
+    fig, ax = plt.subplots(figsize=(5, 4))
 
-    # 4 different colors (TP/TN greenish, FP/FN pinkish)
     from matplotlib.colors import ListedColormap
     cmap = ListedColormap([
-        "#6dd38b",  # TP block (green)
-        "#f4a6a6",  # FN block (pink)
-        "#f7b2b2",  # FP block (light pink)
-        "#7bd88f"   # TN block (green)
+        "#6dd38b",  # TP
+        "#f4a6a6",  # FN
+        "#f7b2b2",  # FP
+        "#7bd88f"   # TN
     ])
 
-    # We paint each cell with a fixed category index:
-    # Row0 Col0 = TP, Row0 Col1 = FN
-    # Row1 Col0 = FP, Row1 Col1 = TN
+    # paint each cell with a fixed category index
     ax.imshow([[0, 1],
                [2, 3]], cmap=cmap)
 
-    # Put the text labels with counts
+    # labels with counts
     text_labels = np.array([
         [f"TP\n{cm[0,0]}", f"FN\n{cm[0,1]}"],
         [f"FP\n{cm[1,0]}", f"TN\n{cm[1,1]}"]
@@ -137,27 +134,25 @@ def plot_confusion_matrix(cm, labels=("No", "Yes")):
             ax.text(
                 j, i, text_labels[i, j],
                 ha="center", va="center",
-                fontsize=11, fontweight="bold", color="black"
+                fontsize=12, fontweight="bold", color="black"
             )
 
-    # Axis ticks show class names
+    # axis ticks (Positive=Yes, Negative=No)
     ax.set_xticks([0, 1])
-    ax.set_xticklabels([pos_label, neg_label], fontsize=9)  # predicted
+    ax.set_xticklabels([pos_label, neg_label], fontsize=10)
     ax.set_yticks([0, 1])
-    ax.set_yticklabels([pos_label, neg_label], fontsize=9)  # actual
+    ax.set_yticklabels([pos_label, neg_label], fontsize=10)
 
-    ax.set_xlabel("Predicted value", fontsize=9)
-    ax.set_ylabel("Actual value", fontsize=9)
+    ax.set_xlabel("Predicted value", fontsize=10)
+    ax.set_ylabel("Actual value", fontsize=10)
 
-    # Remove borders & tick marks
+    # remove borders & ticks
     for spine in ax.spines.values():
         spine.set_visible(False)
     ax.tick_params(length=0)
 
     plt.tight_layout()
     return fig
-
-
 
 # ------------------------------------------------------------
 # Sidebar
@@ -196,7 +191,10 @@ with left:
 
 with right:
     st.markdown("#### ✅ Selected Model")
-    st.markdown(f'<div class="card"><b>{selected_model}</b><br/>Pipeline includes preprocessing + model.</div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="card"><b>{selected_model}</b><br/>Pipeline includes preprocessing + model.</div>',
+        unsafe_allow_html=True
+    )
 
 if uploaded is None:
     st.warning("👆 Upload a CSV to begin. You can also download the sample test CSV from the sidebar.")
@@ -260,65 +258,98 @@ if st.button("🚀 Predict", use_container_width=True):
     out["PredictedChurn"] = pred_labels
     out["ChurnProbability(Yes)"] = np.round(proba, 4)
 
-    tab1, tab2, tab3 = st.tabs(["📌 Predictions", "📊 Metrics", "🧾 Reports"])
+    # ============================================================
+    # SINGLE PAGE LAYOUT (No tabs)
+    # Order required:
+    # Predictions Summary -> Metrics -> Reports -> Download -> Predictions Output
+    # ============================================================
 
-    with tab1:
-        st.markdown("#### 📌 Predictions Output")
-        st.dataframe(out.head(100), use_container_width=True)
+    st.markdown("---")
+    st.header("📌 Predictions")
 
-        st.markdown("#### 📈 Prediction Summary")
-        churn_yes_pct = y_pred.mean() * 100
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Predicted Churn % (Yes)", f"{churn_yes_pct:.2f}%")
-        c2.metric("Total Rows", f"{len(out)}")
-        c3.metric("Model", selected_model)
+    st.subheader("📈 Prediction Summary")
+    churn_yes_pct = y_pred.mean() * 100
 
-        st.write(out["PredictedChurn"].value_counts())
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Predicted Churn % (Yes)", f"{churn_yes_pct:.2f}%")
+    c2.metric("Total Rows", f"{len(out)}")
+    c3.metric("Model", selected_model)
 
-    with tab2:
-        st.markdown("#### 📊 Evaluation Metrics")
-        if not y_available:
-            st.info("No valid `Churn` column found in uploaded CSV → metrics not available.")
-        else:
-            auc = roc_auc_score(y_true, proba)
-            metrics = {
-                "Accuracy": accuracy_score(y_true, y_pred),
-                "AUC": auc,
-                "Precision": precision_score(y_true, y_pred, zero_division=0),
-                "Recall": recall_score(y_true, y_pred, zero_division=0),
-                "F1": f1_score(y_true, y_pred, zero_division=0),
-                "MCC": matthews_corrcoef(y_true, y_pred)
-            }
+    st.write(out["PredictedChurn"].value_counts())
 
-            m1, m2, m3 = st.columns(3)
-            m1.metric("🎯 Accuracy", f"{metrics['Accuracy']:.4f}")
-            m2.metric("📈 AUC", f"{metrics['AUC']:.4f}")
-            m3.metric("🔍 Precision", f"{metrics['Precision']:.4f}")
+    # ============================================================
+    st.markdown("---")
+    st.header("📊 Metrics")
 
-            m4, m5, m6 = st.columns(3)
-            m4.metric("📣 Recall", f"{metrics['Recall']:.4f}")
-            m5.metric("⚖️ F1", f"{metrics['F1']:.4f}")
-            m6.metric("📐 MCC", f"{metrics['MCC']:.4f}")
+    st.subheader("✅ Evaluation Metrics")
+    if not y_available:
+        st.info("No valid `Churn` column found in uploaded CSV → metrics not available.")
+    else:
+        auc = roc_auc_score(y_true, proba)
+        metrics = {
+            "Accuracy": accuracy_score(y_true, y_pred),
+            "AUC": auc,
+            "Precision": precision_score(y_true, y_pred, zero_division=0),
+            "Recall": recall_score(y_true, y_pred, zero_division=0),
+            "F1": f1_score(y_true, y_pred, zero_division=0),
+            "MCC": matthews_corrcoef(y_true, y_pred)
+        }
 
-            st.markdown("#### 🧩 Confusion Matrix")
-            cm = confusion_matrix(y_true, y_pred)
-            fig = plot_confusion_matrix(cm, labels=("No", "Yes"))
-            st.pyplot(fig)
+        m1, m2, m3 = st.columns(3)
+        m1.metric("🎯 Accuracy", f"{metrics['Accuracy']:.4f}")
+        m2.metric("📈 AUC", f"{metrics['AUC']:.4f}")
+        m3.metric("🔍 Precision", f"{metrics['Precision']:.4f}")
 
-    with tab3:
-        st.markdown("#### 🧾 Classification Report")
-        if not y_available:
-            st.info("Upload CSV with `Churn` column (Yes/No) to view the classification report.")
-        else:
-            report = classification_report(y_true, y_pred, target_names=["No", "Yes"], digits=4)
-            st.code(report)
+        m4, m5, m6 = st.columns(3)
+        m4.metric("📣 Recall", f"{metrics['Recall']:.4f}")
+        m5.metric("⚖️ F1", f"{metrics['F1']:.4f}")
+        m6.metric("📐 MCC", f"{metrics['MCC']:.4f}")
 
-            st.markdown("#### ⬇️ Download predictions")
-            csv_bytes = out.to_csv(index=False).encode("utf-8")
-            st.download_button(
-                "Download predictions as CSV",
-                data=csv_bytes,
-                file_name="predictions_output.csv",
-                mime="text/csv",
-                use_container_width=True
-            )
+        st.subheader("🧩 Confusion Matrix")
+        # Keep Yes as positive class first to match TP/FN/FP/TN layout
+        cm = confusion_matrix(y_true, y_pred, labels=[1, 0])  # Yes then No
+        fig = plot_confusion_matrix(cm, labels=("No", "Yes"))
+        st.pyplot(fig, use_container_width=False)
+
+    # ============================================================
+    st.markdown("---")
+    st.header("🧾 Reports")
+
+    st.subheader("📄 Classification Report")
+    if not y_available:
+        st.info("Upload CSV with `Churn` column (Yes/No) to view the classification report.")
+    else:
+        report_dict = classification_report(
+            y_true, y_pred,
+            target_names=["No", "Yes"],
+            output_dict=True,
+            zero_division=0
+        )
+        report_df = pd.DataFrame(report_dict).T
+
+        if "support" in report_df.columns:
+            report_df["support"] = report_df["support"].astype(int)
+
+        for col in ["precision", "recall", "f1-score"]:
+            if col in report_df.columns:
+                report_df[col] = report_df[col].round(4)
+
+        st.dataframe(report_df, use_container_width=True)
+
+    # ============================================================
+    st.markdown("---")
+    st.subheader("⬇️ Download predictions")
+
+    csv_bytes = out.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        "Download predictions as CSV",
+        data=csv_bytes,
+        file_name="predictions_output.csv",
+        mime="text/csv",
+        use_container_width=True
+    )
+
+    # ============================================================
+    st.markdown("---")
+    st.header("📌 Predictions Output (Detailed)")
+    st.dataframe(out.head(100), use_container_width=True)

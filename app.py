@@ -15,7 +15,7 @@ from sklearn.metrics import (
 # Page Config + Simple CSS for nicer UI
 # ------------------------------------------------------------
 st.set_page_config(
-    page_title="Telco Customer Churn Prediction",
+    page_title="Telcom Customer Churn Prediction",
     page_icon="📞",
     layout="wide"
 )

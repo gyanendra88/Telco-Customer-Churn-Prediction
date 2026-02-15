@@ -96,23 +96,73 @@ def get_probabilities(pipeline, X_data):
         return 1 / (1 + np.exp(-scores))
     return pipeline.predict(X_data).astype(float)
 
-def plot_confusion_matrix(cm, labels=("No", "Yes")):
-    fig, ax = plt.subplots(figsize=(5.2, 4.2))
-    im = ax.imshow(cm)
+def plot_confusion_matrix(cm):
+    """
+    Custom styled confusion matrix (2x2)
+    - Smaller size
+    - 4 colored blocks
+    - TP / TN / FP / FN labels
+    """
 
-    ax.set_xticks([0, 1], labels=[f"Pred {labels[0]}", f"Pred {labels[1]}"])
-    ax.set_yticks([0, 1], labels=[f"Actual {labels[0]}", f"Actual {labels[1]}"])
-    ax.set_title("Confusion Matrix", fontweight="bold")
-    ax.set_xlabel("")
-    ax.set_ylabel("")
+    # ---- Smaller figure size ----
+    fig, ax = plt.subplots(figsize=(4.2, 3.2))
 
-    # annotate values
+    # ---- Custom color layout (matches reference style) ----
+    # [[TP, FN],
+    #  [FP, TN]]
+    color_matrix = np.array([
+        [0.8, 0.4],
+        [0.6, 0.9]
+    ])
+
+    # custom colormap (green + pink tones)
+    from matplotlib.colors import ListedColormap
+    cmap = ListedColormap([
+        "#6dd38b",  # green
+        "#f4a6a6",  # pink
+        "#f7b2b2",  # light pink
+        "#7bd88f"   # green
+    ])
+
+    ax.imshow([[0,1],[2,3]], cmap=cmap)
+
+    # ---- Labels for each block ----
+    labels = np.array([
+        [f"TP\n{cm[0,0]}", f"FN\n{cm[0,1]}"],
+        [f"FP\n{cm[1,0]}", f"TN\n{cm[1,1]}"]
+    ])
+
     for i in range(2):
         for j in range(2):
-            ax.text(j, i, str(cm[i, j]), ha="center", va="center", fontweight="bold")
+            ax.text(
+                j, i,
+                labels[i, j],
+                ha="center",
+                va="center",
+                fontsize=11,
+                fontweight="bold",
+                color="black"
+            )
+
+    # ---- Axis labels (clean style like sample image) ----
+    ax.set_xticks([0, 1])
+    ax.set_xticklabels(["Positive", "Negative"], fontsize=9)
+
+    ax.set_yticks([0, 1])
+    ax.set_yticklabels(["Positive", "Negative"], fontsize=9)
+
+    ax.set_xlabel("Predicted value", fontsize=9)
+    ax.set_ylabel("Actual value", fontsize=9)
+
+    # remove borders
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+
+    ax.tick_params(length=0)
 
     plt.tight_layout()
     return fig
+
 
 # ------------------------------------------------------------
 # Sidebar

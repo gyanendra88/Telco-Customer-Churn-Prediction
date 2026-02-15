@@ -96,38 +96,38 @@ def get_probabilities(pipeline, X_data):
         return 1 / (1 + np.exp(-scores))
     return pipeline.predict(X_data).astype(float)
 
-def plot_confusion_matrix(cm):
+def plot_confusion_matrix(cm, labels=("No", "Yes")):
     """
-    Custom styled confusion matrix (2x2)
-    - Smaller size
+    Styled 2x2 confusion matrix:
+    - Small size
     - 4 colored blocks
-    - TP / TN / FP / FN labels
+    - TP / FN / FP / TN labels
+    - Axis labels: Actual value vs Predicted value
+    labels: (negative_label, positive_label) e.g. ("No","Yes")
     """
 
-    # ---- Smaller figure size ----
-    fig, ax = plt.subplots(figsize=(4.2, 3.2))
+    neg_label, pos_label = labels
 
-    # ---- Custom color layout (matches reference style) ----
-    # [[TP, FN],
-    #  [FP, TN]]
-    color_matrix = np.array([
-        [0.8, 0.4],
-        [0.6, 0.9]
-    ])
+    # Make it compact
+    fig, ax = plt.subplots(figsize=(4.0, 3.0))
 
-    # custom colormap (green + pink tones)
+    # 4 different colors (TP/TN greenish, FP/FN pinkish)
     from matplotlib.colors import ListedColormap
     cmap = ListedColormap([
-        "#6dd38b",  # green
-        "#f4a6a6",  # pink
-        "#f7b2b2",  # light pink
-        "#7bd88f"   # green
+        "#6dd38b",  # TP block (green)
+        "#f4a6a6",  # FN block (pink)
+        "#f7b2b2",  # FP block (light pink)
+        "#7bd88f"   # TN block (green)
     ])
 
-    ax.imshow([[0,1],[2,3]], cmap=cmap)
+    # We paint each cell with a fixed category index:
+    # Row0 Col0 = TP, Row0 Col1 = FN
+    # Row1 Col0 = FP, Row1 Col1 = TN
+    ax.imshow([[0, 1],
+               [2, 3]], cmap=cmap)
 
-    # ---- Labels for each block ----
-    labels = np.array([
+    # Put the text labels with counts
+    text_labels = np.array([
         [f"TP\n{cm[0,0]}", f"FN\n{cm[0,1]}"],
         [f"FP\n{cm[1,0]}", f"TN\n{cm[1,1]}"]
     ])
@@ -135,33 +135,28 @@ def plot_confusion_matrix(cm):
     for i in range(2):
         for j in range(2):
             ax.text(
-                j, i,
-                labels[i, j],
-                ha="center",
-                va="center",
-                fontsize=11,
-                fontweight="bold",
-                color="black"
+                j, i, text_labels[i, j],
+                ha="center", va="center",
+                fontsize=11, fontweight="bold", color="black"
             )
 
-    # ---- Axis labels (clean style like sample image) ----
+    # Axis ticks show class names
     ax.set_xticks([0, 1])
-    ax.set_xticklabels(["Positive", "Negative"], fontsize=9)
-
+    ax.set_xticklabels([pos_label, neg_label], fontsize=9)  # predicted
     ax.set_yticks([0, 1])
-    ax.set_yticklabels(["Positive", "Negative"], fontsize=9)
+    ax.set_yticklabels([pos_label, neg_label], fontsize=9)  # actual
 
     ax.set_xlabel("Predicted value", fontsize=9)
     ax.set_ylabel("Actual value", fontsize=9)
 
-    # remove borders
+    # Remove borders & tick marks
     for spine in ax.spines.values():
         spine.set_visible(False)
-
     ax.tick_params(length=0)
 
     plt.tight_layout()
     return fig
+
 
 
 # ------------------------------------------------------------

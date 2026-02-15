@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 import joblib
 import matplotlib.pyplot as plt
-
+import scipy.sparse as sp
 from sklearn.metrics import (
     accuracy_score, roc_auc_score, precision_score, recall_score,
     f1_score, matthews_corrcoef, confusion_matrix, classification_report
@@ -72,6 +72,10 @@ MODEL_FILES = {
 SAMPLE_CSV_PATH = os.path.join("data", "telco_test_data.csv")
 
 @st.cache_resource
+
+def sparse_to_dense(x):
+    return x.toarray() if sp.issparse(x) else x
+    
 def load_pipeline(model_path: str):
     return joblib.load(model_path)
 

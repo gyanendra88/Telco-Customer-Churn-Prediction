@@ -181,10 +181,10 @@ ml_assignment_2/
 ├── app.py                                     # Streamlit web application
 ├── requirements.txt                           # Python dependencies
 ├── README.md                                  # Project documentation
-├── .gitignore                                 # Git ignore file
+├── runtime.txt                                # Hardcoding Python version for Streamlit app
 ├── data/
 │   ├── WA_Fn-UseC_-Telco-Customer-Churn.csv   # Original dataset
-│   └── telco_test_data.csv                    # Test split for Streamlit app
+│   └── telco_test_data.csv                    # Sample Test data for Streamlit app
 └── model/
     ├── 2025AA05771_modeltraining.ipynb        # Model training notebook 
     ├── logistic_regression.joblib           

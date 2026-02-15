@@ -50,7 +50,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.markdown('<div class="main-title">📞 Telco Customer Churn Prediction</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">📞 Telcom Customer Churn Prediction</div>', unsafe_allow_html=True)
 st.markdown(
     '<div class="subtext">Upload a test CSV, select a model, and get predictions + evaluation metrics (if <b>Churn</b> column exists).</div>',
     unsafe_allow_html=True
